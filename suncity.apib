@@ -1,0 +1,256 @@
+FORMAT: 1A
+HOST: http://polls.apiblueprint.org/
+
+# 太阳城项目
+
+太阳城人力资源管理系统
+
+
+## 个人档案 [/profiles]
+
+### 获取个人档案模版 [GET /profiles/template{?region}]
+
+根据地区参数，获取到该地区模版所含项目和字段。
+
++ Parameters
+    + region : `macau` (string, required) - 需要获取的模版所属地区
+    
++ Response 200 (application/json)
+
+        {
+          "data": [
+            {
+              "chinese_name": "個人信息",
+              "english_name": "Personal infomation",
+              "type": "fields",
+              "key": "personal_information",
+              "fields": [
+                {
+                  "chinese_name": "中文姓名",
+                  "english_name": "Chinese Name",
+                  "type": "string",
+                  "key": "chinese_name"
+                },
+                {
+                  "chinese_name": "外文姓名",
+                  "english_name": "English Name",
+                  "type": "string",
+                  "key": "english_name"
+                },
+                {
+                  "chinese_name": "照片",
+                  "english_name": "Photo",
+                  "type": "image",
+                  "key": "photo"
+                },
+                {
+                  "chinese_name": "性別",
+                  "english_name": "Gender",
+                  "type": "select",
+                  "key": "gender",
+                  "select": {
+                    "options": [
+                      {
+                        "key": "male",
+                        "chinese_name": "男",
+                        "english_name": "male"
+                      },
+                      {
+                        "key": "female",
+                        "chinese_name": "女",
+                        "english_name": "female"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "chinese_name": "國籍",
+                  "english_name": "Nationality",
+                  "type": "select",
+                  "key": "nationality",
+                  "select": {
+                    "options": [
+                      {
+                        "key": "china",
+                        "chinese_name": "中国",
+                        "english_name": "China"
+                      },
+                      {
+                        "key": "macau",
+                        "chinese_name": "澳门",
+                        "english_name": "Macau"
+                      }
+                    ]
+                  }
+                },
+                {
+                  "chinese_name": "合约终止日期",
+                  "english_name": "Contract Terminated Date",
+                  "type": "date",
+                  "key": "contract_terminated_date"
+                }
+              ]
+            },
+            {
+              "chinese_name": "職程信息",
+              "english_name": "Career history",
+              "type": "table",
+              "key": "career_history",
+              "fields": [
+                {
+                  "chinese_name": "職位開始日期",
+                  "english_name": "Position start date",
+                  "type": "date",
+                  "key": "position_start_date"
+                },
+                {
+                  "chinese_name": "職位結束日期",
+                  "english_name": "Position end date",
+                  "type": "date",
+                  "key": "position_end_date"
+                },
+                {
+                  "chinese_name": "離職日期",
+                  "english_name": "Resigned date",
+                  "type": "date",
+                  "key": "resigned_date"
+                }
+              ]
+            }
+          ],
+          "state": "success"
+        }
+
+### 创建新的个人档案 [POST]
+
+填充模版内容，创建新的个人档案
+
++ Request (application/json)
+
+        {
+            "region": "macau",
+            "sections": [
+              {
+                "key": "personal_information",
+                "field_values": {
+                  "chinese_name": "孙琪",
+                  "english_name": "梁苑博",
+                  "photo": "https://robohash.org/eligendinonnemo.png?size=300x300&set=set1",
+                  "gender": "female",
+                  "nationality": "china",
+                  "contract_terminated_date": "2007-10-12"
+                }
+              },
+              {
+                "key": "career_history",
+                "rows": [
+                  {
+                    "position_start_date": "2007-10-05",
+                    "position_end_date": "2014-01-19",
+                    "resigned_date": "2011-11-04"
+                  }
+                ]
+              }
+            ]
+        }
+        
+
++ Response 200
+    
+        {
+            "data": [],
+            "state": "success"
+        }
+    
+### 列出所有的个人档案 [GET /profiles/{?select_columns[]*, region}]
+
++ Parameters
+    + region : `macau` (string, required) - 查询的模版列表所属地区
+    + `select_columns[]` (array[string], required) - 需要列出的字段名称
+    
++ Response 200 (application/json)
+
+        {
+          "data": {
+            "fields": [
+              {
+                "chinese_name": "中文姓名",
+                "english_name": "Chinese Name",
+                "type": "string",
+                "key": "chinese_name"
+              }
+            ],
+            "profiles": [
+              {
+                "id": 1,
+                "chinese_name": "孙琪"
+              }
+            ]
+          },
+          "state": "success"
+        }
+        
+### 修改个人档案 [PATCH /profiles/{?id}]
+
+`edit_action_type`目前有四种
+
+* `edit_field` 修改字段
+* `add_row` 增加列
+* `remove_row` 删除列
+* `edit_row_field` 修改列值
+
++ Parameters
+    + `id` (int, required) - 修改的档案id
+    
++ Request (application/json)
+    
+        {
+          "edit_action_type": "edit_field",
+          "params": {
+            "section_key": "personal_information",
+            "field": "photo",
+            "new_value": "https://robohash.org/foo.png?size=300x300&set=set1"
+          }
+        }
+        
+        {
+          "edit_action_type": "add_row",
+          "params": {
+            "section_key": "career_history",
+            "new_row": {
+              "position_start_date": {
+                "value": "2016-01-30"
+              },
+              "position_end_date": {
+                "value": "2015-09-06"
+              },
+              "resigned_date": {
+                "value": "2008-11-17"
+              }
+            }
+          }
+        }
+        
+        {
+          "edit_action_type": "remove_row",
+          "params": {
+            "section_key": "career_history",
+            "row_id": "fcd60ae4-d1dc-4dd4-96e7-e4a09557e8f9"
+          }
+        }
+        
+        {
+          "edit_action_type": "edit_row_field",
+          "params": {
+            "section_key": "career_history",
+            "row_id": "461763b5-7066-4d05-bbc9-674cdb8ebbb2",
+            "field": "position_start_date",
+            "new_value": "2008-05-24"
+          }
+        }
++ Response 200 (application/json)
+    
+        {
+            "data": [],
+            "state": "success"
+        }
